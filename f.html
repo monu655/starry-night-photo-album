@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Starry Night Photo Album</title>
+    <style>
+        /* Global Styles */
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(to bottom, #000428, #004e92); /* Deep Blue Gradient */
+            color: #f0f0f0;
+        }
+
+        /* Starry Night Background */
+        body::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600"%3E%3Cg fill="none" stroke="%23FFFFFF" stroke-width="0.5"%3E%3Ccircle cx="400" cy="300" r="0.5" fill="white" /%3E%3Ccircle cx="250" cy="100" r="1.2" fill="white" /%3E%3Ccircle cx="350" cy="450" r="1.5" fill="white" /%3E%3Ccircle cx="700" cy="400" r="1" fill="white" /%3E%3C/g%3E%3C/svg%3E');
+            z-index: -1;
+            opacity: 0.8;
+            animation: stars 100s linear infinite;
+        }
+
+        @keyframes stars {
+            from {transform: translateY(0);}
+            to {transform: translateY(-1000px);}
+        }
+
+        /* Album Container */
+        .album {
+            max-width: 1200px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: rgba(0, 0, 0, 0.7);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+            border-radius: 20px;
+            color: #f0f0f0;
+            text-align: center;
+        }
+
+        /* Album Title */
+        .album h1 {
+            margin-bottom: 30px;
+            color: #FFD700; /* Gold */
+            font-size: 2.5em;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            text-shadow: 2px 2px 5px rgba(255, 215, 0, 0.5);
+        }
+
+        /* Photo Grid */
+        .photo-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+        }
+
+        /* Photo Style */
+        .photo {
+            position: relative;
+            overflow: hidden;
+            cursor: pointer;
+            border-radius: 10px;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .photo img {
+            width: 100%;
+            height: auto;
+            display: block;
+            border-radius: 10px;
+            transition: transform 0.3s ease;
+        }
+
+        .photo:hover img {
+            transform: scale(1.05);
+            box-shadow: 0 4px 12px rgba(255, 215, 0, 0.7); /* Gold Glow on Hover */
+        }
+
+        /* Lightbox Styles */
+        .lightbox {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            padding-top: 60px;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.9);
+        }
+
+        .lightbox-content {
+            margin: auto;
+            display: block;
+            width: 80%;
+            max-width: 800px;
+            border-radius: 15px;
+            border: 5px solid #FFD700; /* Gold Border */
+        }
+
+        #caption {
+            text-align: center;
+            color: #FFD700; /* Gold */
+            padding: 10px 0;
+            font-size: 1.5em;
+            text-shadow: 1px 1px 3px rgba(255, 215, 0, 0.5);
+        }
+
+        .close {
+            position: absolute;
+            top: 30px;
+            right: 30px;
+            color: #f1f1f1;
+            font-size: 50px;
+            font-weight: bold;
+            transition: color 0.3s;
+            cursor: pointer;
+        }
+
+        .close:hover {
+            color: #FFD700; /* Gold on Hover */
+        }
+
+        /* Share Button */
+        .share-btn {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: #FFD700; /* Gold */
+            color: #000;
+            padding: 10px 20px;
+            border-radius: 50px;
+            font-size: 16px;
+            cursor: pointer;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+        }
+
+        .share-btn:hover {
+            background-color: #ffcc00; /* Brighter Gold */
+        }
+    </style>
+</head>
+<body>
+    <div class="album">
+        <h1>Starry Night Photo Album</h1>
+        <div class="photo-grid" id="photo-grid">
+            <!-- Photos will be generated here by JavaScript -->
+        </div>
+    </div>
+
+    <!-- Lightbox Modal -->
+    <div id="lightbox" class="lightbox">
+        <span class="close">&times;</span>
+        <img class="lightbox-content" id="lightbox-img">
+        <div id="caption"></div>
+    </div>
+
+    <!-- Share Button -->
+    <div class="share-btn" id="share-btn">Share</div>
+
+    <script>
+        const photoGrid = document.getElementById('photo-grid');
+        const numberOfPhotos = 46;  // Number of photos
+
+        // Loop to generate photo elements
+        for (let i = 1; i <= numberOfPhotos; i++) {
+            const photoDiv = document.createElement('div');
+            photoDiv.className = 'photo';
+            photoDiv.setAttribute('data-caption', `Caption for Photo ${i}`);
+            photoDiv.innerHTML = `<img src="photo${i}.jpg" alt="Photo ${i}">`;
+            photoGrid.appendChild(photoDiv);
+        }
+
+        // Lightbox functionality
+        const lightbox = document.getElementById('lightbox');
+        const lightboxImg = document.getElementById('lightbox-img');
+        const captionText = document.getElementById('caption');
+
+        document.querySelectorAll('.photo').forEach(photo => {
+            photo.addEventListener('click', () => {
+                lightbox.style.display = 'block';
+                lightboxImg.src = photo.querySelector('img').src;
+                captionText.innerHTML = photo.getAttribute('data-caption');
+            });
+        });
+
+        document.querySelector('.close').addEventListener('click', () => {
+            lightbox.style.display = 'none';
+        });
+
+        // Share functionality
+        document.getElementById('share-btn').addEventListener('click', () => {
+            if (navigator.share) {
+                navigator.share({
+                    title: 'Starry Night Photo Album',
+                    url: window.location.href
+                }).then(() => {
+                    console.log('Thanks for sharing!');
+                }).catch(err => {
+                    console.error('Error sharing:', err);
+                });
+            } else {
+                alert('Web Share API not supported on this browser.');
+            }
+        });
+    </script>
+</body>
+</html>
